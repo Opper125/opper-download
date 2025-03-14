@@ -1,0 +1,12 @@
+{
+    "name": "opper-download",
+    "version": "1.0.0",
+    "description": "Video downloader with premium features",
+    "dependencies": {
+        "@supabase/supabase-js": "^2.0.0",
+        "ytdl-core": "^4.11.0"
+    },
+    "scripts": {
+        "start": "serve"
+    }
+}
