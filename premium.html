@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium - OPPER DOWNLOAD</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            margin: 0;
+            padding: 0;
+            color: white;
+        }
+        header {
+            text-align: center;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        header h1 {
+            margin: 0;
+            font-size: 28px;
+            animation: fadeIn 1s ease-in;
+        }
+        #user-id-display {
+            text-align: center;
+            margin: 15px 0;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .premium-container {
+            text-align: center;
+            margin: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        .premium-container p {
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        .premium-active {
+            color: #00ff00;
+            font-size: 18px;
+            animation: glow 1s infinite alternate;
+        }
+        .hidden { display: none; }
+        @keyframes glow { from { text-shadow: 0 0 5px #00ff00; } to { text-shadow: 0 0 15px #00ff00; } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @media (max-width: 600px) {
+            header h1 { font-size: 24px; }
+            .premium-container p { font-size: 14px; }
+        }
+    </style>
+</head>
+<body>
+    <header><h1>Premium ဝန်ဆောင်မှု</h1></header>
+    <div id="user-id-display">My ID: <span id="user-id"></span></div>
+    <div class="premium-container">
+        <p>1 လ - 10,000 ကျပ်</p>
+        <p>3 လ - 30,000 ကျပ်</p>
+        <p>6 လ - 60,000 ကျပ်</p>
+        <p>1 နှစ် - 100,000 ကျပ်</p>
+        <p>Premium ဝယ်ယူရန် Telegram: <a href="https://t.me/OPPERN">https://t.me/OPPERN</a> တွင် Admin ကို ဆက်သွယ်ပါ။</p>
+        <p id="premium-status" class="hidden">သင်သည် Premium အသုံးပြုသူဖြစ်ပါသည်။ သက်တမ်းကုန်ဆုံးမည့်ရက်: <span id="expiry-date"></span></p>
+    </div>
+
+    <script>
+        const supabase = Supabase.createClient('https://vflnbvpxxawbnzkwyszm.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmbG5idnB4eGF3Ym56a3d5c3ptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE5ODMwNTQsImV4cCI6MjA1NzU1OTA1NH0.X_KbHhvLQSoIjIp5ulCmuTOyjeSQ1NpRsUgr72Vgsdc');
+        let userId = localStorage.getItem("userId") || Math.random().toString(36).substring(2);
+        localStorage.setItem("userId", userId);
+        document.getElementById("user-id").textContent = userId;
+
+        window.onload = async function() {
+            if (!navigator.onLine) {
+                alert("အင်တာနက်ချိတ်ဆက်မှု မရှိပါ။ ကျေးဇူးပြု၍ အင်တာနက်ဖွင့်ပါ။");
+            }
+            const { data } = await supabase.from('premium_users').select('*').eq('user_id', userId);
+            if (data && data.length > 0 && new Date(data[0].expiry_date) > new Date()) {
+                document.getElementById("premium-status").classList.remove("hidden");
+                document.getElementById("premium-status").classList.add("premium-active");
+                document.getElementById("expiry-date").textContent = new Date(data[0].expiry_date).toLocaleDateString();
+            }
+        };
+    </script>
+</body>
+</html>
