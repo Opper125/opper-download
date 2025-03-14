@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OPPER DOWNLOAD</title>
+    <script src="https://cdn.jsdelivr.net/npm/ytdl-core@latest/dist/ytdl.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            margin: 0;
+            padding: 0;
+            color: white;
+            overflow-x: hidden;
+        }
+        header {
+            text-align: center;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        header h1 {
+            margin: 0;
+            font-size: 28px;
+            animation: fadeIn 1s ease-in;
+        }
+        #user-id-display {
+            text-align: center;
+            margin: 15px 0;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .premium-active {
+            color: #00ff00;
+            animation: glow 1s infinite alternate;
+        }
+        .search-bar {
+            text-align: center;
+            margin: 20px;
+        }
+        .search-bar input {
+            width: 70%;
+            padding: 12px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        .search-bar button {
+            padding: 12px 25px;
+            background: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+            transition: transform 0.3s;
+        }
+        .search-bar button:hover {
+            transform: scale(1.1);
+        }
+        nav {
+            display: flex;
+            justify-content: space-around;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            backdrop-filter: blur(5px);
+        }
+        nav a {
+            text-decoration: none;
+            color: white;
+            font-size: 14px;
+            transition: color 0.3s;
+        }
+        nav a:hover {
+            color: #ff4444;
+        }
+        .progress-bar {
+            width: 0%;
+            height: 20px;
+            background: #00ff00;
+            border-radius: 10px;
+            transition: width 0.5s;
+            margin: 10px auto;
+            max-width: 80%;
+        }
+        .hidden { display: none; }
+        #spider-animation {
+            width: 80px;
+            height: 80px;
+            background: url('assets/spider.png') no-repeat;
+            background-size: contain;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: drop 2s linear;
+        }
+        #video-preview {
+            text-align: center;
+            margin: 20px;
+        }
+        #video-preview iframe {
+            width: 100%;
+            max-width: 400px;
+            height: 225px;
+            border: none;
+            border-radius: 10px;
+        }
+        #download-list {
+            margin: 20px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+        @keyframes drop { from { transform: translateY(-100px) translateX(-50%); } to { transform: translateY(0) translateX(-50%); } }
+        @keyframes glow { from { text-shadow: 0 0 5px #00ff00; } to { text-shadow: 0 0 15px #00ff00; } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @media (max-width: 600px) {
+            .search-bar input { width: 85%; }
+            header h1 { font-size: 24px; }
+            nav a { font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+    <header><h1>OPPER DOWNLOAD</h1></header>
+    <div id="user-id-display">My ID: <span id="user-id"></span> <span id="premium-status" class="hidden"> (Premium)</span></div>
+    <div class="search-bar">
+        <input type="text" id="video-link" placeholder="YouTube လင့်ခ်ထည့်ပါ (ဥပမာ: https://www.youtube.com/watch?v=...)">
+        <button onclick="checkLink()">ရှာဖွေပါ</button>
+    </div>
+    <div id="video-preview" class="hidden"></div>
+    <nav>
+        <a href="#" onclick="selectPlatform('youtube')">YouTube</a>
+        <a href="#" onclick="selectPlatform('facebook')">Facebook</a>
+        <a href="#" onclick="selectPlatform('tiktok')">TikTok</a>
+        <a href="#" onclick="showDownloads()">Downloads</a>
+        <a href="premium.html">Premium</a>
+        <a href="#" onclick="showAbout()">About</a>
+    </nav>
+    <div id="progress" class="progress-bar"></div>
+    <div id="spider-animation" class="hidden"></div>
+    <div id="download-list" class="hidden"></div>
+
+    <script>
+        const supabase = Supabase.createClient('https://vflnbvpxxawbnzkwyszm.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmbG5idnB4eGF3Ym56a3d5c3ptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE5ODMwNTQsImV4cCI6MjA1NzU1OTA1NH0.X_KbHhvLQSoIjIp5ulCmuTOyjeSQ1NpRsUgr72Vgsdc');
+        let userId = localStorage.getItem("userId") || Math.random().toString(36).substring(2);
+        localStorage.setItem("userId", userId);
+        document.getElementById("user-id").textContent = userId;
+
+        let isPremium = false;
+        async function checkPremium() {
+            const { data, error } = await supabase.from('premium_users').select('*').eq('user_id', userId);
+            if (error) console.error(error);
+            if (data && data.length > 0 && new Date(data[0].expiry_date) > new Date()) {
+                isPremium = true;
+                document.getElementById("premium-status").classList.remove("hidden");
+                document.getElementById("premium-status").classList.add("premium-active");
+            } else {
+                isPremium = false;
+                document.getElementById("premium-status").classList.add("hidden");
+            }
+        }
+
+        window.onload = async function() {
+            if (!navigator.onLine) {
+                alert("အင်တာနက်ချိတ်ဆက်မှု မရှိပါ။ ကျေးဇူးပြု၍ အင်တာနက်ဖွင့်ပါ။");
+            }
+            await checkPremium();
+        };
+
+        function selectPlatform(platform) {
+            if (platform === 'youtube') {
+                alert("YouTube ကို ရွေးချယ်ပြီးပါပြီ။ လင့်ခ်ထည့်ပါ။");
+            } else {
+                alert("လောလောဆယ် YouTube လင့်ခ်များသာ ပံ့ပိုးထားပါသည်။");
+            }
+        }
+
+        async function checkLink() {
+            let link = document.getElementById("video-link").value;
+            if (!link.includes("youtube.com/watch?v=")) {
+                alert("YouTube လင့်ခ်များသာ လက်ခံပါသည်။ ဥပမာ: https://www.youtube.com/watch?v=abc123");
+                return;
+            }
+
+            try {
+                const info = await ytdl.getInfo(link);
+                const videoId = link.split("v=")[1].split("&")[0];
+                const preview = document.getElementById("video-preview");
+                preview.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe>`;
+                preview.classList.remove("hidden");
+
+                document.getElementById("spider-animation").classList.remove("hidden");
+                let progress = 0;
+                let progressBar = document.getElementById("progress");
+                let interval = setInterval(() => {
+                    progress += 10;
+                    progressBar.style.width = progress + "%";
+                    if (progress >= 100) {
+                        clearInterval(interval);
+                        document.getElementById("spider-animation").classList.add("hidden");
+                        downloadYouTube(link);
+                    }
+                }, 500);
+            } catch (error) {
+                alert("ဤလင့်ခ်မှာ ဗီဒီယိုမရှိပါ သို့မဟုတ် အမှားရှိနေပါသည်: " + error.message);
+            }
+        }
+
+        async function downloadYouTube(link) {
+            try {
+                const info = await ytdl.getInfo(link);
+                const url = ytdl.chooseFormat(info.formats, { quality: 'highest' }).url;
+                alert("Download ပြီးပါပြီ။ URL: " + url);
+                await supabase.from('downloads').insert({ user_id: userId, link: link, downloaded_at: new Date() });
+                if (!isPremium) alert("ကြော်ငြာ: Premium ဝယ်ယူပါ။");
+            } catch (error) {
+                alert("Download မအောင်မြင်ပါ: " + error.message);
+            }
+        }
+
+        async function showDownloads() {
+            let downloadList = document.getElementById("download-list");
+            downloadList.innerHTML = "";
+            downloadList.classList.remove("hidden");
+            const { data } = await supabase.from('downloads').select('link').eq('user_id', userId);
+            data.forEach(item => {
+                let p = document.createElement("p");
+                p.textContent = item.link;
+                downloadList.appendChild(p);
+            });
+        }
+
+        function showAbout() {
+            alert("Telegram: https://t.me/OPPERN တွင် Admin ကို ဆက်သွယ်ပါ။");
+        }
+    </script>
+</body>
+</html>
