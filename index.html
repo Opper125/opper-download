@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OPPER DOWNLOAD</title>
+    <script src="https://cdn.jsdelivr.net/npm/ytdl-core@latest/dist/ytdl.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            margin: 0;
+            padding: 0;
+            color: white;
+            overflow-x: hidden;
+        }
+        header {
+            text-align: center;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        header h1 {
+            margin: 0;
+            font-size: 28px;
+            animation: fadeIn 1s ease-in;
+        }
+        #user-id-display {
+            text-align: center;
+            margin: 15px 0;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .premium-active {
+            color: #ffd700; /* ရွှေရောင် */
+            animation: goldGlow 1.5s infinite alternate;
+            text-shadow: 0 0 10px #ffd700, 0 0 20px #ffeb3b;
+        }
+        .search-bar {
+            text-align: center;
+            margin: 20px;
+        }
+        .search-bar input {
+            width: 70%;
+            padding: 12px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        .search-bar button, .download-btn {
+            padding: 12px 25px;
+            background: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+            transition: transform 0.3s;
+        }
+        .search-bar button:hover, .download-btn:hover {
+            transform: scale(1.1);
+        }
+        nav {
+            display: flex;
+            justify-content: space-around;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            backdrop-filter: blur(5px);
+        }
+        nav a {
+            text-decoration: none;
+            color: white;
+            font-size: 14px;
+            transition: color 0.3s;
+        }
+        nav a:hover {
+            color: #ff4444;
+        }
+        .progress-bar {
+            width: 0%;
+            height: 20px;
+            background: #00ff00;
+            border-radius: 10px;
+            transition: width 0.5s;
+            margin: 10px auto;
+            max-width: 80%;
+        }
+        .hidden { display: none; }
+        #spider-animation {
+            width: 80px;
+            height: 80px;
+            background: url('assets/spider.png') no-repeat;
+            background-size: contain;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: drop 2s linear;
+        }
+        #video-preview, #download-list, #youtube-search-results {
+            text-align: center;
+            margin: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+        }
+        #video-preview iframe {
+            width: 100%;
+            max-width: 400px;
+            height: 225px;
+            border: none;
+            border-radius: 10px;
+        }
+        #premium-info {
+            text-align: center;
+            margin: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+        }
+        #premium-info p {
+            margin: 5px 0;
+            font-size: 16px;
+        }
+        .video-item {
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+        }
+        @keyframes drop { from { transform: translateY(-100px) translateX(-50%); } to { transform: translateY(0) translateX(-50%); } }
+        @keyframes goldGlow { from { text-shadow: 0 0 5px #ffd700; } to { text-shadow: 0 0 15px #ffd700, 0 0 25px #ffeb3b; } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @media (max-width: 600px) {
+            .search-bar input { width: 85%; }
+            header h1 { font-size: 24px; }
+            nav a { font-size: 12px; }
+            #premium-info p { font-size: 14px; }
+        }
+    </style>
+</head>
+<body>
+    <header><h1>OPPER DOWNLOAD</h1></header>
+    <div id="user-id-display">My ID: <span id="user-id"></span> <span id="premium-status" class="hidden"> (Premium)</span></div>
+    <div class="search-bar">
+        <input type="text" id="video-link" placeholder="YouTube လင့်ခ်ထည့်ပါ သို့မဟုတ် ရှာပါ (ဥပမာ: https://youtu.be/abc123)">
+        <button onclick="checkLinkOrSearch()">ရှာဖွေပါ</button>
+    </div>
+    <div id="video-preview" class="hidden"></div>
+    <div id="youtube-search-results" class="hidden"></div>
+    <div id="premium-info">
+        <p>Premium စျေးနှုန်း:</p>
+        <p>1 လ - 10,000 ကျပ်</p>
+        <p>3 လ - 30,000 ကျပ်</p>
+        <p>6 လ - 60,000 ကျပ်</p>
+        <p>1 နှစ် - 100,000 ကျပ်</p>
+        <p>Premium ဝယ်ယူရန် Telegram: <a href="https://t.me/OPPERN">https://t.me/OPPERN</a> တွင် Admin ကို ဆက်သွယ်ပါ။</p>
+    </div>
+    <nav>
+        <a href="#" onclick="selectPlatform('youtube')">YouTube</a>
+        <a href="#" onclick="selectPlatform('facebook')">Facebook</a>
+        <a href="#" onclick="selectPlatform('tiktok')">TikTok</a>
+        <a href="#" onclick="showDownloads()">Downloads</a>
+        <a href="#" onclick="showAbout()">About</a>
+    </nav>
+    <div id="progress" class="progress-bar"></div>
+    <div id="spider-animation" class="hidden"></div>
+    <div id="download-list" class="hidden"></div>
+
+    <script>
+        // Device-specific ID ဖန်တီးရန်
+        function getDeviceId() {
+            let deviceId = localStorage.getItem("deviceId");
+            if (!deviceId) {
+                deviceId = navigator.userAgent + Math.random().toString(36).substring(2);
+                deviceId = btoa(deviceId).substring(0, 20);
+                localStorage.setItem("deviceId", deviceId);
+            }
+            return deviceId;
+        }
+
+        let userId = getDeviceId();
+        document.getElementById("user-id").textContent = userId;
+
+        let isPremium = false;
+        async function checkPremium() {
+            const response = await fetch('/.netlify/functions/data', {
+                method: 'POST',
+                body: JSON.stringify({ userId })
+            });
+            const data = await response.json();
+            isPremium = data.isPremium;
+            if (isPremium) {
+                document.getElementById("premium-status").classList.remove("hidden");
+                document.getElementById("premium-status").classList.add("premium-active");
+            } else {
+                document.getElementById("premium-status").classList.add("hidden");
+            }
+        }
+
+        window.onload = async function() {
+            if (!navigator.onLine) {
+                alert("အင်တာနက်ချိတ်ဆက်မှု မရှိပါ။ ကျေးဇူးပြု၍ အင်တာနက်ဖွင့်ပါ။");
+            }
+            await checkPremium();
+        };
+
+        function selectPlatform(platform) {
+            if (platform === 'youtube') {
+                alert("YouTube ကို ရွေးချယ်ပြီးပါပြီ။ လင့်ခ်ထည့်ပါ။");
+            } else {
+                alert("လောလောဆယ် YouTube လင့်ခ်များသာ ပံ့ပိုးထားပါသည်။");
+            }
+        }
+
+        async function checkLinkOrSearch() {
+            let input = document.getElementById("video-link").value.trim();
+            if (input.includes("youtube.com") || input.includes("youtu.be")) {
+                await checkLink(input);
+            } else {
+                await searchYouTube(input);
+            }
+        }
+
+        async function checkLink(link) {
+            let videoId;
+            if (link.includes("youtu.be/")) {
+                const match = link.match(/youtu\.be\/([^\?]+)/);
+                videoId = match ? match[1] : null;
+            } else if (link.includes("youtube.com/shorts/")) {
+                const match = link.match(/shorts\/([^\?]+)/);
+                videoId = match ? match[1] : null;
+            } else {
+                const match = link.match(/[?&]v=([^&]+)/);
+                videoId = match ? match[1] : null;
+            }
+
+            if (!videoId) {
+                alert("မမှန်ကန်သော YouTube လင့်ခ်ဖြစ်ပါသ�ည်။ ဥပမာ: https://youtu.be/abc123");
+                return;
+            }
+
+            const fullLink = `https://www.youtube.com/watch?v=${videoId}`;
+
+            try {
+                const info = await ytdl.getInfo(fullLink);
+                const preview = document.getElementById("video-preview");
+                preview.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe>`;
+                preview.classList.remove("hidden");
+
+                document.getElementById("spider-animation").classList.remove("hidden");
+                let progress = 0;
+                let progressBar = document.getElementById("progress");
+                let interval = setInterval(() => {
+                    progress += 10;
+                    progressBar.style.width = progress + "%";
+                    if (progress >= 100) {
+                        clearInterval(interval);
+                        document.getElementById("spider-animation").classList.add("hidden");
+                        downloadYouTube(fullLink, videoId, info.formats[0].url);
+                    }
+                }, 500);
+            } catch (error) {
+                alert("ဤလင့်ခ်မှာ ဗီဒီယိုမရှိပါ သို့မဟုတ် အမှားရှိနေပါသည်: " + error.message);
+            }
+        }
+
+        async function downloadYouTube(link, videoId, downloadUrl) {
+            try {
+                // Chrome မှာ အလိုအလျောက် Download စတင်ရန်
+                const a = document.createElement('a');
+                a.href = downloadUrl;
+                a.download = `${videoId}.mp4`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+
+                await fetch('/.netlify/functions/data', {
+                    method: 'POST',
+                    body: JSON.stringify({ userId, action: 'download', link: `https://www.youtube.com/watch?v=${videoId}` })
+                });
+
+                // Download မှတ်တမ်းပြရန်
+                const downloadList = document.getElementById("download-list");
+                downloadList.classList.remove("hidden");
+                const item = document.createElement("div");
+                item.className = "video-item";
+                item.innerHTML = `Downloaded: <a href="${downloadUrl}" target="_blank">https://www.youtube.com/watch?v=${videoId}</a>`;
+                downloadList.appendChild(item);
+
+                if (!isPremium) alert("ကြော်ငြာ: Premium ဝယ်ယူပါ။");
+            } catch (error) {
+                alert("Download မအောင်မြင်ပါ: " + error.message);
+            }
+        }
+
+        async function searchYouTube(query) {
+            const apiKey = 'YOUR_YOUTUBE_API_KEY'; // YouTube Data API Key ထည့်ပါ
+            const response = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&key=${apiKey}&maxResults=10`);
+            const data = await response.json();
+            const resultsDiv = document.getElementById("youtube-search-results");
+            resultsDiv.innerHTML = "";
+            resultsDiv.classList.remove("hidden");
+
+            data.items.forEach(item => {
+                const videoId = item.id.videoId;
+                const title = item.snippet.title;
+                const videoItem = document.createElement("div");
+                videoItem.className = "video-item";
+                videoItem.innerHTML = `
+                    <p>${title}</p>
+                    <iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe>
+                    <button class="download-btn" onclick="downloadYouTube('https://www.youtube.com/watch?v=${videoId}', '${videoId}', 'https://www.youtube.com/watch?v=${videoId}')">Download</button>
+                `;
+                resultsDiv.appendChild(videoItem);
+            });
+        }
+
+        async function showDownloads() {
+            let downloadList = document.getElementById("download-list");
+            downloadList.innerHTML = "";
+            downloadList.classList.remove("hidden");
+            const response = await fetch('/.netlify/functions/data', {
+                method: 'POST',
+                body: JSON.stringify({ userId, action: 'getDownloads' })
+            });
+            const data = await response.json();
+            data.downloads.forEach(item => {
+                let div = document.createElement("div");
+                div.className = "video-item";
+                div.innerHTML = `Downloaded: <a href="${item.link}" target="_blank">${item.link}</a>`;
+                downloadList.appendChild(div);
+            });
+        }
+
+        function showAbout() {
+            alert("Telegram: https://t.me/OPPERN တွင် Admin ကို ဆက်သွယ်ပါ။");
+        }
+    </script>
+</body>
+</html>
